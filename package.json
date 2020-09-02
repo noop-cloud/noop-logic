@@ -1,0 +1,24 @@
+{
+  "name": "noop-logic",
+  "version": "1.0.0",
+  "description": "Noop Logic Library",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/noop-cloud/noop-logic.git"
+  },
+  "scripts": {
+    "postversion": "git push && git push --tags"
+  },
+  "author": "Chloe Wintzer",
+  "license": "GPL",
+  "bugs": {
+    "url": "https://github.com/noop-cloud/noop-logic/issues"
+  },
+  "homepage": "https://github.com/noop-cloud/noop-logic#readme",
+  "devDependencies": {},
+  "dependencies": {
+    "json-logic-js": "^1.2.2",
+    "node-cidr": "^1.0.0"
+  }
+}
