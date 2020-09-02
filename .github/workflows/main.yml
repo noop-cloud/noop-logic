@@ -14,13 +14,12 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 1
-      - name: Install and Build Inspector Console, Publish to NPM
+      - name: Install and Publish to NPM
         uses: actions/setup-node@v1
         with:
           node-version: '12'
           registry-url: 'https://registry.npmjs.org'
-      - run: npm run install-console
-      - run: npm run build-console
+      - run: npm run install
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
