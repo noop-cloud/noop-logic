@@ -1,4 +1,4 @@
-const jsonlogic = require('json-logic-js')
+const logic = require('./logic')
 const iptool = require('node-cidr')
 const useragent = require('useragent')
 const urlparse = require('url-parse')
@@ -7,13 +7,13 @@ const dot = require('dot-object')
 
 class NoopLogic {
   constructor () {
-    jsonlogic.add_operation('cidr', (cidr, ip) => {
+    logic.add_operation('cidr', (cidr, ip) => {
       return iptool.cidr.includes(cidr, ip)
     })
-    jsonlogic.add_operation('useragent', (string) => {
+    logic.add_operation('useragent', (string) => {
       return useragent.parse(string)
     })
-    jsonlogic.add_operation('qs', (string) => {
+    logic.add_operation('qs', (string) => {
       const url = urlparse(string, null, (str) => {
         if (str.startsWith('?')) str = str.substr(1)
         return qs.parse(str)
@@ -21,14 +21,14 @@ class NoopLogic {
       if (!url || !url.query) return {}
       return url.query
     })
-    jsonlogic.add_operation('prop', (prop, obj) => {
+    logic.add_operation('prop', (prop, obj) => {
       if (!prop) return obj
       return dot.pick(prop, obj)
     })
   }
 
   apply (condition, data) {
-    return jsonlogic.apply(condition, data)
+    return logic.apply(condition, data)
   }
 }
 
