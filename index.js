@@ -8,46 +8,56 @@ const dot = require('dot-object')
 class NoopLogic {
   constructor () {
     // cidr
-    // Checks if an IP address is included in a CIDR
+    // If 'cidr' is string, checks if IP address is included in given CIDR
+    // If 'cidr' is array, checks if IP address is included in any of the supplied CIDRs
     // Returns a boolean
     logic.add_operation('cidr', (cidr, ip) => {
+      if (Array.isArray(cidr)) {
+        for (const c of cidr) {
+          if (iptool.cidr.includes(c, ip)) return true
+        }
+        return false
+      }
       return iptool.cidr.includes(cidr, ip)
     })
     // useragent
     // Parses a User-Agent
-    // Returns an object
-    logic.add_operation('useragent', string => {
-      return useragent.parse(string)
+    // If 'prop' is defined, returns an object representation of user-agent
+    // If 'prop' is undefined, returns specified property in user-agent object
+    logic.add_operation('useragent', (ua, prop) => {
+      ua = useragent.parse(ua)
+      return this.prop(prop, ua)
     })
     // qs
     // Parses querystring in URL/path
-    // Returns an object
-    logic.add_operation('qs', string => {
-      const url = urlparse(string, null, str => {
-        if (str[0] === '?') str = str.substr(1)
-        return qs.parse(str)
+    // If 'prop' is defined, returns an object representation of querystring
+    // If 'prop' is undefined, returns specified property in querystring object
+    logic.add_operation('qs', (str, prop) => {
+      const url = urlparse(str, null, query => {
+        if (query[0] === '?') query = qs.parse(query.substr(1))
+        return this.prop(prop, query)
       })
       if (!url || !url.query) return {}
       return url.query
     })
-    // index_of
-    // Finds index of 'a' in 'b'. Matches Javascript's indexOf behavior
+    // indexof
+    // Finds index of 'a' in 'b', matches Javascript's indexOf behavior
     // Returns a number
-    logic.add_operation('index_of', (a, b) => {
+    logic.add_operation('indexof', (a, b) => {
       if (!b || typeof b.indexOf === 'undefined') return false
       return b.indexOf(a)
     })
-    // starts_with
+    // startswith
     // Finds if'b' starts with 'a'
     // Returns a boolean
-    logic.add_operation('starts_with', (a, b) => {
+    logic.add_operation('startswith', (a, b) => {
       if (!b || typeof b.indexOf === 'undefined') return false
       return b.indexOf(a) === 0
     })
-    // ends_with
+    // endswith
     // Finds if 'b' ends with 'a'
     // Returns a boolean
-    logic.add_operation('ends_with', (a, b) => {
+    logic.add_operation('endswith', (a, b) => {
       if (!b || typeof b.indexOf === 'undefined') return false
       return b.substr(b.length - a.length) === a
     })
@@ -60,9 +70,15 @@ class NoopLogic {
     // prop
     // Reference property of resulting object from another operation
     logic.add_operation('prop', (prop, obj) => {
-      if (!prop) return obj
-      return dot.pick(prop, obj)
+      return this.prop(prop, obj)
     })
+  }
+
+  // prop function used throughout Noop Logic operations
+  prop (prop, obj) {
+    if (!obj) return {}
+    if (!prop) return obj
+    return dot.pick(prop, obj)
   }
 
   apply (condition, data) {
