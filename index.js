@@ -48,7 +48,7 @@ class NoopLogic {
       return b.indexOf(a)
     })
     // startswith
-    // Finds if'b' starts with 'a'
+    // Finds if 'b' starts with 'a'
     // Returns a boolean
     logic.add_operation('startswith', (a, b) => {
       if (!b || typeof b.indexOf === 'undefined') return false
