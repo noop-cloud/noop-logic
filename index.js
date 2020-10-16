@@ -7,24 +7,78 @@ const dot = require('dot-object')
 
 class NoopLogic {
   constructor () {
+    // cidr
+    // If 'cidr' is string, checks if IP address is included in given CIDR
+    // If 'cidr' is array, checks if IP address is included in any of the supplied CIDRs
+    // Returns a boolean
     logic.add_operation('cidr', (cidr, ip) => {
+      if (Array.isArray(cidr)) {
+        for (const c of cidr) {
+          if (iptool.cidr.includes(c, ip)) return true
+        }
+        return false
+      }
       return iptool.cidr.includes(cidr, ip)
     })
-    logic.add_operation('useragent', (string) => {
-      return useragent.parse(string)
+    // useragent
+    // Parses a User-Agent
+    // If 'prop' is defined, returns an object representation of user-agent
+    // If 'prop' is undefined, returns specified property in user-agent object
+    logic.add_operation('useragent', (ua, prop) => {
+      ua = useragent.parse(ua)
+      return this.prop(prop, ua)
     })
-    logic.add_operation('qs', (string) => {
-      const url = urlparse(string, null, (str) => {
-        if (str.startsWith('?')) str = str.substr(1)
-        return qs.parse(str)
+    // qs
+    // Parses querystring in URL/path
+    // If 'prop' is defined, returns an object representation of querystring
+    // If 'prop' is undefined, returns specified property in querystring object
+    logic.add_operation('qs', (str, prop) => {
+      const url = urlparse(str, null, query => {
+        if (query[0] === '?') query = qs.parse(query.substr(1))
+        return this.prop(prop, query)
       })
       if (!url || !url.query) return {}
       return url.query
     })
-    logic.add_operation('prop', (prop, obj) => {
-      if (!prop) return obj
-      return dot.pick(prop, obj)
+    // indexof
+    // Finds index of 'a' in 'b', matches Javascript's indexOf behavior
+    // Returns a number
+    logic.add_operation('indexof', (a, b) => {
+      if (!b || typeof b.indexOf === 'undefined') return false
+      return b.indexOf(a)
     })
+    // startswith
+    // Finds if 'b' starts with 'a'
+    // Returns a boolean
+    logic.add_operation('startswith', (a, b) => {
+      if (!b || typeof b.indexOf === 'undefined') return false
+      return b.indexOf(a) === 0
+    })
+    // endswith
+    // Finds if 'b' ends with 'a'
+    // Returns a boolean
+    logic.add_operation('endswith', (a, b) => {
+      if (!b || typeof b.indexOf === 'undefined') return false
+      return b.substr(b.length - a.length) === a
+    })
+    // length
+    // Finds length of a string
+    // Returns a number
+    logic.add_operation('length', string => {
+      return string.length
+    })
+    // prop
+    // Reference property of resulting object from another operation
+    logic.add_operation('prop', (prop, obj) => {
+      return this.prop(prop, obj)
+    })
+  }
+
+  // prop function used throughout Noop Logic operations
+  prop (prop, obj) {
+    if (!obj) return {}
+    if (!prop) return obj
+    return dot.pick(prop, obj)
   }
 
   apply (condition, data) {
