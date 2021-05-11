@@ -16,12 +16,13 @@
     "url": "https://github.com/noop-cloud/noop-logic/issues"
   },
   "homepage": "https://github.com/noop-cloud/noop-logic#readme",
-  "devDependencies": {},
   "dependencies": {
     "dot-object": "^2.1.4",
     "node-cidr": "^1.0.0",
     "qs": "^6.9.6",
     "url-parse": "^1.4.7",
-    "useragent": "^2.3.0"
+    "useragent": "^2.3.0",
+    "wildcard-match": "^5.1.0",
+    "yamlparser": "^0.0.2"
   }
 }

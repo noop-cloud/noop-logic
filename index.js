@@ -4,6 +4,7 @@ const useragent = require('useragent')
 const urlparse = require('url-parse')
 const qs = require('qs')
 const dot = require('dot-object')
+import wildcard from 'wildcard-match'
 
 class NoopLogic {
   constructor () {
@@ -72,6 +73,14 @@ class NoopLogic {
     logic.add_operation('prop', (prop, obj) => {
       return this.prop(prop, obj)
     })
+    // match
+    // Wildcard match of a string against one or more patterns
+    // Returns boolean if any patterns match
+    logic.add_operation('match', (string, patterns) => {
+      const key = patterns.toString()
+      if (!NoopLogic._cache.matchers[key]) NoopLogic._cache.matchers[key] = wildcard(patterns)
+      return result = NoopLogic._cache.matchers[key](string)
+    })
   }
 
   // prop function used throughout Noop Logic operations
@@ -86,4 +95,8 @@ class NoopLogic {
   }
 }
 
-module.exports = new NoopLogic()
+NoopLogic._cache = {
+  matchers: {}
+}
+
+export default new NoopLogic()
