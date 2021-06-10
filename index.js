@@ -1,10 +1,10 @@
-const logic = require('./logic')
+const logic = require('./logic.js')
 const iptool = require('node-cidr')
 const useragent = require('useragent')
 const urlparse = require('url-parse')
 const qs = require('qs')
 const dot = require('dot-object')
-import wildcard from 'wildcard-match'
+const wildcard = require('wildcard-match')
 
 class NoopLogic {
   constructor () {
@@ -79,7 +79,7 @@ class NoopLogic {
     logic.add_operation('match', (string, patterns) => {
       const key = patterns.toString()
       if (!NoopLogic._cache.matchers[key]) NoopLogic._cache.matchers[key] = wildcard(patterns)
-      return result = NoopLogic._cache.matchers[key](string)
+      return NoopLogic._cache.matchers[key](string)
     })
   }
 
@@ -99,4 +99,4 @@ NoopLogic._cache = {
   matchers: {}
 }
 
-export default new NoopLogic()
+module.exports = new NoopLogic()
