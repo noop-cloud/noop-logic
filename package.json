@@ -8,7 +8,11 @@
     "url": "git+https://github.com/noop-cloud/noop-logic.git"
   },
   "scripts": {
-    "postversion": "git push && git push --tags"
+    "lint": "standard --fix --verbose | snazzy",
+    "postinstall": "husky install",
+    "postpublish": "pinst --enable",
+    "postversion": "git push && git push --tags",
+    "prepublishOnly": "pinst --disable"
   },
   "author": "Chloe Wintzer",
   "license": "GPL",
@@ -24,5 +28,11 @@
     "url-parse": "^1.5.1",
     "useragent": "^2.3.0",
     "yamlparser": "^0.0.2"
+  },
+  "devDependencies": {
+    "husky": "^6.0.0",
+    "pinst": "^2.1.6",
+    "snazzy": "^9.0.0",
+    "standard": "^16.0.3"
   }
 }
