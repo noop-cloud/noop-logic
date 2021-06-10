@@ -4,7 +4,7 @@ const useragent = require('useragent')
 const urlparse = require('url-parse')
 const qs = require('qs')
 const dot = require('dot-object')
-const wildcard = require('wildcard-match')
+const { makeRe } = require('minimatch')
 
 class NoopLogic {
   constructor () {
@@ -13,13 +13,11 @@ class NoopLogic {
     // If 'cidr' is array, checks if IP address is included in any of the supplied CIDRs
     // Returns a boolean
     logic.add_operation('cidr', (cidr, ip) => {
-      if (Array.isArray(cidr)) {
-        for (const c of cidr) {
-          if (iptool.cidr.includes(c, ip)) return true
-        }
-        return false
+      if (!Array.isArray(cidr)) cidr = [cidr]
+      for (const c of cidr) {
+        if (iptool.cidr.includes(c, ip)) return true
       }
-      return iptool.cidr.includes(cidr, ip)
+      return false
     })
     // useragent
     // Parses a User-Agent
@@ -77,9 +75,12 @@ class NoopLogic {
     // Wildcard match of a string against one or more patterns
     // Returns boolean if any patterns match
     logic.add_operation('match', (string, patterns) => {
-      const key = patterns.toString()
-      if (!NoopLogic._cache.matchers[key]) NoopLogic._cache.matchers[key] = wildcard(patterns)
-      return NoopLogic._cache.matchers[key](string)
+      if (!Array.isArray(patterns)) patterns = [patterns]
+      for (const p of patterns) {
+        if (!(p in NoopLogic._cache.matchers)) NoopLogic._cache.matchers[p] = makeRe(p)
+        if (NoopLogic._cache.matchers[p].test(string)) return true
+      }
+      return false
     })
   }
 
