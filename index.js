@@ -1,10 +1,10 @@
 const logic = require('./logic.js')
-const iptool = require('node-cidr')
+const { Netmask } = require('netmask')
 const useragent = require('useragent')
 const urlparse = require('url-parse')
 const qs = require('qs')
-const dot = require('dot-object')
-const { makeRe } = require('minimatch')
+const { get } = require('dot-prop')
+const { makeRe } = require('micromatch')
 
 class NoopLogic {
   constructor () {
@@ -15,7 +15,8 @@ class NoopLogic {
     logic.add_operation('cidr', (cidr, ip) => {
       if (!Array.isArray(cidr)) cidr = [cidr]
       for (const c of cidr) {
-        if (iptool.cidr.includes(c, ip)) return true
+        if (!(c in NoopLogic._cache.cidrs)) NoopLogic._cache.cidrs[c] = new Netmask(c)
+        if (NoopLogic._cache.cidrs[c].contains(ip)) return true
       }
       return false
     })
@@ -88,7 +89,7 @@ class NoopLogic {
   prop (prop, obj) {
     if (!obj) return {}
     if (!prop) return obj
-    return dot.pick(prop, obj)
+    return get(obj, prop)
   }
 
   apply (condition, data) {
@@ -97,7 +98,8 @@ class NoopLogic {
 }
 
 NoopLogic._cache = {
-  matchers: {}
+  matchers: {},
+  cidrs: {}
 }
 
 module.exports = new NoopLogic()
