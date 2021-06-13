@@ -1,10 +1,10 @@
-const logic = require('./logic')
-const iptool = require('node-cidr')
+const logic = require('./logic.js')
+const { Netmask } = require('netmask')
 const useragent = require('useragent')
 const urlparse = require('url-parse')
 const qs = require('qs')
-const dot = require('dot-object')
-import wildcard from 'wildcard-match'
+const { get } = require('dot-prop')
+const { makeRe } = require('micromatch')
 
 class NoopLogic {
   constructor () {
@@ -13,13 +13,12 @@ class NoopLogic {
     // If 'cidr' is array, checks if IP address is included in any of the supplied CIDRs
     // Returns a boolean
     logic.add_operation('cidr', (cidr, ip) => {
-      if (Array.isArray(cidr)) {
-        for (const c of cidr) {
-          if (iptool.cidr.includes(c, ip)) return true
-        }
-        return false
+      if (!Array.isArray(cidr)) cidr = [cidr]
+      for (const c of cidr) {
+        if (!(c in NoopLogic._cache.cidrs)) NoopLogic._cache.cidrs[c] = new Netmask(c)
+        if (NoopLogic._cache.cidrs[c].contains(ip)) return true
       }
-      return iptool.cidr.includes(cidr, ip)
+      return false
     })
     // useragent
     // Parses a User-Agent
@@ -77,9 +76,12 @@ class NoopLogic {
     // Wildcard match of a string against one or more patterns
     // Returns boolean if any patterns match
     logic.add_operation('match', (string, patterns) => {
-      const key = patterns.toString()
-      if (!NoopLogic._cache.matchers[key]) NoopLogic._cache.matchers[key] = wildcard(patterns)
-      return result = NoopLogic._cache.matchers[key](string)
+      if (!Array.isArray(patterns)) patterns = [patterns]
+      for (const p of patterns) {
+        if (!(p in NoopLogic._cache.matchers)) NoopLogic._cache.matchers[p] = makeRe(p)
+        if (NoopLogic._cache.matchers[p].test(string)) return true
+      }
+      return false
     })
   }
 
@@ -87,7 +89,7 @@ class NoopLogic {
   prop (prop, obj) {
     if (!obj) return {}
     if (!prop) return obj
-    return dot.pick(prop, obj)
+    return get(obj, prop)
   }
 
   apply (condition, data) {
@@ -96,7 +98,8 @@ class NoopLogic {
 }
 
 NoopLogic._cache = {
-  matchers: {}
+  matchers: {},
+  cidrs: {}
 }
 
-export default new NoopLogic()
+module.exports = new NoopLogic()
