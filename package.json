@@ -1,6 +1,6 @@
 {
   "name": "noop-logic",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Noop Logic Library",
   "main": "index.js",
   "repository": {
