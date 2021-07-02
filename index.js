@@ -4,7 +4,7 @@ const useragent = require('useragent')
 const urlparse = require('url-parse')
 const qs = require('qs')
 const { get } = require('dot-prop')
-const { makeRe } = require('micromatch')
+const { makeRe } = require('minimatch')
 
 class NoopLogic {
   constructor () {
